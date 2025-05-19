@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build:wasm": "cd wasm-speedtest-wasm && wasm-pack build --target web",
+    "build": "npm run build:wasm && next build",
     "start": "next start",
     "lint": "next lint"
   },
