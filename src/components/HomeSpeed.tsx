@@ -60,7 +60,6 @@ export default function SpeedTest() {
 
   async function runTest() {
     if (!wasm) {
-      console.log("WASM non ancora inizializzato");
       return;
     }
     setDownloadSpeed(null);
