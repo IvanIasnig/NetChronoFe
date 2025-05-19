@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import initWasm, {
   calculate_speed,
-} from "../../wasm-speedtest-wasm/pkg/wasm_speedtest_wasm";
+} from "../../public/wasm-speedtest-wasm/wasm_speedtest_wasm";
 
 export function useWasm() {
   const [wasmReady, setWasmReady] = useState(false);
