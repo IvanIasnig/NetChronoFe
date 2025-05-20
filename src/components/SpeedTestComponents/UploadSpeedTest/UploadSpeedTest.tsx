@@ -24,29 +24,40 @@ const UploadSpeedTest = () => {
   async function testUploadSpeedStreaming(wasm: {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     calculate_speed: Function;
-  }) {
-    setLoading(true);
-    const testFile = new Blob(["a".repeat(1024 * 1024)], { type: "application/octet-stream" });
+  }) {setLoading(true);
 
+  const fileSize = 1024 * 1024; // 1MB file for example
+  const testFile = new Blob(["a".repeat(fileSize)], { type: "application/octet-stream" });
+  const chunkSize = 64 * 1024; // 64KB chunk size
+  let offset = 0;
+
+  const sendChunk = async (chunk: Blob): Promise<void> => {
     const startTime = performance.now();
+    
     await fetch('/uploadEndpoint', {
       method: 'POST',
-      body: testFile
+      body: chunk
     });
 
     const endTime = performance.now();
     const elapsed = Math.max(1, Math.round(endTime - startTime));
 
-    // Assume 1MB file size for simplicity
-    const bytesSent = 1024 * 1024;
-
-    const speed = wasm.calculate_speed(
-      BigInt(bytesSent),
+    const chunkSpeed = wasm.calculate_speed(
+      BigInt(chunk.size),
       BigInt(elapsed)
     );
 
-    setUploadSpeed(speed);
-    updateChart(speed);
+    setUploadSpeed(chunkSpeed);
+    updateChart(chunkSpeed);
+  };
+
+  while (offset < fileSize) {
+    const chunk = testFile.slice(offset, offset + chunkSize);
+    await sendChunk(chunk);
+    offset += chunkSize;
+  }
+
+  setLoading(false);
     setLoading(false);
   }
 
