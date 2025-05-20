@@ -1,6 +1,6 @@
 "use client";
+import { loginWithEmail } from "@/lib/auth";
 import { useState } from "react";
-import { loginWithEmail } from "../lib/auth";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
