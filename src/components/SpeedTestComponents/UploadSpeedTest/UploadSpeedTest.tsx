@@ -22,7 +22,7 @@ const UploadSpeedTest = () => {
   const chartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
 
   async function testUploadSpeedStreaming(wasm: {
-    // Adjust the function type accordingly
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     calculate_speed: Function;
   }) {
     setLoading(true);
