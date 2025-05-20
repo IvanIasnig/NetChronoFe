@@ -26,9 +26,9 @@ const UploadSpeedTest = () => {
     calculate_speed: Function;
   }) {setLoading(true);
 
-  const fileSize = 1024 * 1024; // 1MB file for example
+  const fileSize = 1024 * 1024 * 30; // 30MB fil
   const testFile = new Blob(["a".repeat(fileSize)], { type: "application/octet-stream" });
-  const chunkSize = 64 * 1024; // 64KB chunk size
+  const chunkSize = 64 * 1024; 
   let offset = 0;
 
   const sendChunk = async (chunk: Blob): Promise<void> => {

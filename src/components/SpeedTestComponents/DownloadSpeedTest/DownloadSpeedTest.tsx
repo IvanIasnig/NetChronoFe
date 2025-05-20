@@ -11,7 +11,6 @@ import {
   ChartOptions,
   ChartData,
 } from "chart.js";
-import styles from './DownloadSpeedTest.module.scss'
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
@@ -122,7 +121,6 @@ const DownloadSpeedTest =() => {
       {downloadSpeed !== null && (
         <p>Download: {downloadSpeed.toFixed(2)} Mbps</p>
       )}
-      <p className={styles.prova}>PROVAAAA</p>
       <canvas ref={chartRef} width={300} height={150}></canvas>
     </div>
   );

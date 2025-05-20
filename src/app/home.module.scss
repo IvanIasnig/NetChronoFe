@@ -1,0 +1,12 @@
+@import '@/styles/breakpoints.module.scss';
+
+.home{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    @media (min-width: $breakpoint-md) {
+        flex-direction: row;
+      }
+}
