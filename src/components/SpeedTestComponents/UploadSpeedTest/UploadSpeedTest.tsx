@@ -14,9 +14,9 @@ const UploadSpeedTest = ({uploadSpeed, uploadChartRef}:IUploadSpeedTestProps) =>
   
   return (
     <div>
-      {uploadSpeed !== null && (
+      {uploadSpeed !== null ? (
         <p>Upload: {uploadSpeed.toFixed(2)} Mbps</p>
-      )}
+      ) : <p>Upload:</p>}
       <canvas ref={uploadChartRef} width={300} height={150}></canvas>
     </div>
   );

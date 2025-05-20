@@ -13,9 +13,9 @@ const DownloadSpeedTest = ({downloadSpeed, downloadChartRef}:IDownloadSpeedTestP
 
   return (
     <div>
-      {downloadSpeed !== null && (
+      {downloadSpeed !== null ? (
         <p>Download: {downloadSpeed.toFixed(2)} Mbps</p>
-      )}
+      ): <p>Download: </p>}
       <canvas ref={downloadChartRef} width={300} height={150}></canvas>
     </div>
   );

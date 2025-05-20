@@ -34,11 +34,14 @@ export default function Home() {
 
   const sendChunk = async (chunk: Blob): Promise<void> => {
     const startTime = performance.now();
+
+    console.log(chunk)
     
-    await fetch('/uploadEndpoint', {
-      method: 'POST',
-      body: chunk
-    });
+  await fetch('/api/upload', {
+    method: 'POST',
+    body: chunk
+  });
+
 
     const endTime = performance.now();
     const elapsed = Math.max(1, Math.round(endTime - startTime));
@@ -215,7 +218,6 @@ export default function Home() {
     <div className={styles.home}>
       <DownloadSpeedTest downloadSpeed={downloadSpeed} downloadChartRef={downloadChartRef}/>
       <UploadSpeedTest uploadSpeed={uploadSpeed} uploadChartRef={uploadChartRef}/>
-      lalala!
     </div>
     </>
 

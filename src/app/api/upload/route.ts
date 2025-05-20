@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+export async function POST(req: Request) {
+  const chunk = await req.text()
+  console.log(chunk)
 
-export async function POST() {
-  return NextResponse.json({ status: "ok" });
+  return Response.json({message: 'Chunk recived'})
 }
