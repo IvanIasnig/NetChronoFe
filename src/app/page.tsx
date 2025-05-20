@@ -35,6 +35,11 @@ export default function Home() {
   const sendChunk = async (chunk: Blob): Promise<void> => {
     const startTime = performance.now();
     
+    await fetch('/uploadEndpoint', {
+      method: 'POST',
+      body: chunk
+    });
+
     const endTime = performance.now();
     const elapsed = Math.max(1, Math.round(endTime - startTime));
 
