@@ -215,6 +215,7 @@ export default function Home() {
     <div className={styles.home}>
       <DownloadSpeedTest downloadSpeed={downloadSpeed} downloadChartRef={downloadChartRef}/>
       <UploadSpeedTest uploadSpeed={uploadSpeed} uploadChartRef={uploadChartRef}/>
+      lalala!
     </div>
     </>
 
