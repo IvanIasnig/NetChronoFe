@@ -1,15 +1,11 @@
-import HomeSpeed from "@/components/HomeSpeed";
-import { LoginForm } from "@/components/LoginForm";
-import RegisterForm from "@/components/RegisterForm";
+import DownloadSpeedTest from "@/components/SpeedTestComponents/DownloadSpeedTest/DownloadSpeedTest";
+import UploadSpeedTest from "@/components/SpeedTestComponents/UploadSpeedTest/UploadSpeedTest";
 
 export default function Home() {
   return (
-    <div>
-      <LoginForm />
-      <br />
-      <RegisterForm />
-      <br />
-      <HomeSpeed />
-    </div>
+    <>
+      <DownloadSpeedTest />
+      <UploadSpeedTest/>
+    </>
   );
 }

@@ -14,47 +14,39 @@ import {
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
-export default function SpeedTest() {
+const UploadSpeedTest = () => {
   const wasm = useWasm();
-  const [downloadSpeed, setDownloadSpeed] = useState<number | null>(null);
+  const [uploadSpeed, setUploadSpeed] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
 
-  async function testDownloadSpeedStreaming(wasm: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  async function testUploadSpeedStreaming(wasm: {
+    // Adjust the function type accordingly
     calculate_speed: Function;
   }) {
     setLoading(true);
-    const response = await fetch(
-      `/testFile/testfile.pdf?nocache=${Date.now()}`
-    );
-    if (!response.body) {
-      setLoading(false);
-      throw new Error("ReadableStream non disponibile");
-    }
+    const testFile = new Blob(["a".repeat(1024 * 1024)], { type: "application/octet-stream" });
 
-    const reader = response.body.getReader();
-    let bytesReceived = 0;
     const startTime = performance.now();
+    await fetch('/uploadEndpoint', {
+      method: 'POST',
+      body: testFile
+    });
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    const endTime = performance.now();
+    const elapsed = Math.max(1, Math.round(endTime - startTime));
 
-      bytesReceived += value.byteLength;
-      const currentTime = performance.now();
-      const elapsed = Math.max(1, Math.round(currentTime - startTime));
+    // Assume 1MB file size for simplicity
+    const bytesSent = 1024 * 1024;
 
-      const speed = wasm.calculate_speed(
-        BigInt(bytesReceived),
-        BigInt(elapsed)
-      );
+    const speed = wasm.calculate_speed(
+      BigInt(bytesSent),
+      BigInt(elapsed)
+    );
 
-      setDownloadSpeed(speed);
-      updateChart(speed);
-    }
-
+    setUploadSpeed(speed);
+    updateChart(speed);
     setLoading(false);
   }
 
@@ -62,15 +54,15 @@ export default function SpeedTest() {
     if (!wasm) {
       return;
     }
-    setDownloadSpeed(null);
-    await testDownloadSpeedStreaming(wasm);
+    setUploadSpeed(null);
+    await testUploadSpeedStreaming(wasm);
   }
 
   useEffect(() => {
     if (chartRef.current && !chartInstanceRef.current) {
       const maxSpeed = 100;
       const data: ChartData<"doughnut"> = {
-        labels: ["Velocità di download", "Rimanente"],
+        labels: ["Velocità di upload", "Rimanente"],
         datasets: [
           {
             data: [0, maxSpeed],
@@ -102,7 +94,6 @@ export default function SpeedTest() {
     };
   }, []);
 
-  // Funzione che aggiorna solo i dati del grafico senza ricrearlo
   function updateChart(speed: number) {
     if (!chartInstanceRef.current) return;
     const maxSpeed = 100;
@@ -116,12 +107,14 @@ export default function SpeedTest() {
   return (
     <div>
       <button onClick={runTest} disabled={loading}>
-        {loading ? "Test in corso..." : "Avvia Speed Test"}
+        {loading ? "Test in corso..." : "Avvia Speed Test Upload"}
       </button>
-      {downloadSpeed !== null && (
-        <p>Download: {downloadSpeed.toFixed(2)} Mbps</p>
+      {uploadSpeed !== null && (
+        <p>Upload: {uploadSpeed.toFixed(2)} Mbps</p>
       )}
       <canvas ref={chartRef} width={300} height={150}></canvas>
     </div>
   );
 }
+
+export default UploadSpeedTest;
