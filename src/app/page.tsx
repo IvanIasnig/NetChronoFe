@@ -3,34 +3,35 @@ import DownloadSpeedTest from "@/components/SpeedTestComponents/DownloadSpeedTes
 import UploadSpeedTest from "@/components/SpeedTestComponents/UploadSpeedTest/UploadSpeedTest";
 import styles from "./home.module.scss";
 import { useWasm } from "@/hooks/useWasm";
-import { useState, useRef, useEffect, RefObject } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Chart,
-  BarController,
-  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
   CategoryScale,
   LinearScale,
+  TimeScale,
   Tooltip,
   Legend,
   Title,
-  DoughnutController,
-  ArcElement,
   ChartData,
   ChartOptions,
 } from "chart.js";
 
 import { useMetricsWebSocket } from "@/hooks/useMetricsWebSocket";
+import LineMetricsChart from "@/components/SpeedTestComponents/LineChart/LineChart";
 
 Chart.register(
-  BarController,
-  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
   CategoryScale,
   LinearScale,
+  TimeScale,
   Tooltip,
   Legend,
-  Title,
-  DoughnutController,
-  ArcElement
+  Title
 );
 
 export default function Home() {
@@ -43,9 +44,6 @@ export default function Home() {
   const uploadChartRef = useRef<HTMLCanvasElement>(null);
   const downloadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
   const uploadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
-  const pingChartRef = useRef<HTMLCanvasElement>(null);
-  const jitterChartRef = useRef<HTMLCanvasElement>(null);
-  const packetLossChartRef = useRef<HTMLCanvasElement>(null);
 
   const pingChartInstanceRef = useRef<Chart<"bar"> | null>(null);
   const jitterChartInstanceRef = useRef<Chart<"bar"> | null>(null);
@@ -248,77 +246,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const createChart = (
-      ref: React.RefObject<HTMLCanvasElement>,
-      instanceRef: React.MutableRefObject<Chart<"bar"> | null>,
-      label: string,
-      color: string
-    ) => {
-      if (ref.current && !instanceRef.current) {
-        const data: ChartData<"bar"> = {
-          labels: [label],
-          datasets: [
-            {
-              label,
-              data: [0],
-              backgroundColor: [color],
-            },
-          ],
-        };
-
-        const options: ChartOptions<"bar"> = {
-          responsive: true,
-          indexAxis: "y",
-          scales: {
-            x: {
-              beginAtZero: true,
-              max: label === "Packet Loss" ? 100 : undefined,
-            },
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true },
-          },
-        };
-
-        instanceRef.current = new Chart(ref.current, {
-          type: "bar",
-          data,
-          options,
-        });
-      }
-    };
-
-    createChart(
-      pingChartRef as RefObject<HTMLCanvasElement>,
-      pingChartInstanceRef,
-      "Ping",
-      "#FF6384"
-    );
-    createChart(
-      jitterChartRef as RefObject<HTMLCanvasElement>,
-      jitterChartInstanceRef,
-      "Jitter",
-      "#FFCE56"
-    );
-    createChart(
-      packetLossChartRef as RefObject<HTMLCanvasElement>,
-      packetLossChartInstanceRef,
-      "Packet Loss",
-      "#4BC0C0"
-    );
-
-    return () => {
-      pingChartInstanceRef.current?.destroy();
-      jitterChartInstanceRef.current?.destroy();
-      packetLossChartInstanceRef.current?.destroy();
-      pingChartInstanceRef.current = null;
-      jitterChartInstanceRef.current = null;
-      packetLossChartInstanceRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
     if (pingChartInstanceRef.current && ping !== null) {
       pingChartInstanceRef.current.data.datasets[0].data = [ping];
       pingChartInstanceRef.current.update("none");
@@ -353,17 +280,12 @@ export default function Home() {
           uploadSpeed={uploadSpeed}
           uploadChartRef={uploadChartRef}
         />
-        <div></div>
         <div className={styles.metrics}>
-          <div>
-            <canvas ref={pingChartRef} width={200} height={60} />
-          </div>
-          <div>
-            <canvas ref={jitterChartRef} width={200} height={60} />
-          </div>
-          <div>
-            <canvas ref={packetLossChartRef} width={200} height={60} />
-          </div>
+          <LineMetricsChart
+            ping={ping}
+            jitter={jitter}
+            packetLoss={packetLoss}
+          />
         </div>
       </div>
     </>
