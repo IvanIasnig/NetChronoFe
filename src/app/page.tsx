@@ -1,15 +1,10 @@
-"use client"
+"use client";
 import DownloadSpeedTest from "@/components/SpeedTestComponents/DownloadSpeedTest/DownloadSpeedTest";
 import UploadSpeedTest from "@/components/SpeedTestComponents/UploadSpeedTest/UploadSpeedTest";
-import styles from './home.module.scss'
+import styles from "./home.module.scss";
 import { useWasm } from "@/hooks/useWasm";
 import { useState, useRef, useEffect } from "react";
-import {
-  Chart,
-  ChartOptions,
-  ChartData,
-} from "chart.js";
-
+import { Chart, ChartOptions, ChartData } from "chart.js";
 
 export default function Home() {
   const wasm = useWasm();
@@ -21,47 +16,45 @@ export default function Home() {
   const downloadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
   const uploadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
 
-
   async function testUploadSpeedStreaming(wasm: {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     calculate_speed: Function;
-  }) {setLoading(true);
+  }) {
+    setLoading(true);
 
-  const fileSize = 1024 * 1024 * 30; // 30MB fil
-  const testFile = new Blob(["a".repeat(fileSize)], { type: "application/octet-stream" });
-  const chunkSize = 64 * 1024; 
-  let offset = 0;
+    const fileSize = 1024 * 1024 * 30; // 30MB fil
+    const testFile = new Blob(["a".repeat(fileSize)], {
+      type: "application/octet-stream",
+    });
+    const chunkSize = 64 * 1024;
+    let offset = 0;
 
-  const sendChunk = async (chunk: Blob): Promise<void> => {
-    const startTime = performance.now();
+    const sendChunk = async (chunk: Blob): Promise<void> => {
+      const startTime = performance.now();
 
-    console.log(chunk)
-    
-  await fetch('/api/upload', {
-    method: 'POST',
-    body: chunk
-  });
+      console.log(chunk);
 
+      await fetch("https://speedtest-server-production.up.railway.app/upload");
 
-    const endTime = performance.now();
-    const elapsed = Math.max(1, Math.round(endTime - startTime));
+      const endTime = performance.now();
+      const elapsed = Math.max(1, Math.round(endTime - startTime));
 
-    const chunkSpeed = wasm.calculate_speed(
-      BigInt(chunk.size),
-      BigInt(elapsed)
-    );
+      const chunkSpeed = wasm.calculate_speed(
+        BigInt(chunk.size),
+        BigInt(elapsed)
+      );
 
-    setUploadSpeed(chunkSpeed);
-    updateChart(chunkSpeed);
-  };
+      setUploadSpeed(chunkSpeed);
+      updateChart(chunkSpeed);
+    };
 
-  while (offset < fileSize) {
-    const chunk = testFile.slice(offset, offset + chunkSize);
-    await sendChunk(chunk);
-    offset += chunkSize;
-  }
+    while (offset < fileSize) {
+      const chunk = testFile.slice(offset, offset + chunkSize);
+      await sendChunk(chunk);
+      offset += chunkSize;
+    }
 
-  setLoading(false);
+    setLoading(false);
     setLoading(false);
   }
 
@@ -118,7 +111,10 @@ export default function Home() {
     const dataValue = Math.min(speed, maxSpeed);
     const remaining = maxSpeed - dataValue;
 
-    uploadChartInstanceRef.current.data.datasets[0].data = [dataValue, remaining];
+    uploadChartInstanceRef.current.data.datasets[0].data = [
+      dataValue,
+      remaining,
+    ];
     uploadChartInstanceRef.current.update("none");
   }
 
@@ -128,8 +124,9 @@ export default function Home() {
   }) {
     setLoading(true);
     const response = await fetch(
-      `/testFile/testfile.pdf?nocache=${Date.now()}`
+      `https://speedtest-server-production.up.railway.app/download?nocache=${Date.now()}`
     );
+
     if (!response.body) {
       setLoading(false);
       throw new Error("ReadableStream non disponibile");
@@ -158,7 +155,6 @@ export default function Home() {
 
     setLoading(false);
   }
-
 
   useEffect(() => {
     if (downloadChartRef.current && !downloadChartInstanceRef.current) {
@@ -196,30 +192,34 @@ export default function Home() {
     };
   }, []);
 
-
   function updateUploadChart(speed: number) {
     if (!downloadChartInstanceRef.current) return;
     const maxSpeed = 100;
     const dataValue = Math.min(speed, maxSpeed);
     const remaining = maxSpeed - dataValue;
 
-    downloadChartInstanceRef.current.data.datasets[0].data = [dataValue, remaining];
+    downloadChartInstanceRef.current.data.datasets[0].data = [
+      dataValue,
+      remaining,
+    ];
     downloadChartInstanceRef.current.update("none");
   }
 
-  
-
-  
   return (
     <>
-    <button onClick={runTest} disabled={loading}>
+      <button onClick={runTest} disabled={loading}>
         {loading ? "Test in corso..." : "Avvia Speed Test"}
-    </button>
-    <div className={styles.home}>
-      <DownloadSpeedTest downloadSpeed={downloadSpeed} downloadChartRef={downloadChartRef}/>
-      <UploadSpeedTest uploadSpeed={uploadSpeed} uploadChartRef={uploadChartRef}/>
-    </div>
+      </button>
+      <div className={styles.home}>
+        <DownloadSpeedTest
+          downloadSpeed={downloadSpeed}
+          downloadChartRef={downloadChartRef}
+        />
+        <UploadSpeedTest
+          uploadSpeed={uploadSpeed}
+          uploadChartRef={uploadChartRef}
+        />
+      </div>
     </>
-
   );
 }
