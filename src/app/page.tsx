@@ -3,18 +3,55 @@ import DownloadSpeedTest from "@/components/SpeedTestComponents/DownloadSpeedTes
 import UploadSpeedTest from "@/components/SpeedTestComponents/UploadSpeedTest/UploadSpeedTest";
 import styles from "./home.module.scss";
 import { useWasm } from "@/hooks/useWasm";
-import { useState, useRef, useEffect } from "react";
-import { Chart, ChartOptions, ChartData } from "chart.js";
+import { useState, useRef, useEffect, RefObject } from "react";
+import {
+  Chart,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  Title,
+  DoughnutController,
+  ArcElement,
+  ChartData,
+  ChartOptions,
+} from "chart.js";
+
+import { useMetricsWebSocket } from "@/hooks/useMetricsWebSocket";
+
+Chart.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  Title,
+  DoughnutController,
+  ArcElement
+);
 
 export default function Home() {
   const wasm = useWasm();
   const [downloadSpeed, setDownloadSpeed] = useState<number | null>(null);
   const [uploadSpeed, setUploadSpeed] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+
   const downloadChartRef = useRef<HTMLCanvasElement>(null);
   const uploadChartRef = useRef<HTMLCanvasElement>(null);
   const downloadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
   const uploadChartInstanceRef = useRef<Chart<"doughnut"> | null>(null);
+  const pingChartRef = useRef<HTMLCanvasElement>(null);
+  const jitterChartRef = useRef<HTMLCanvasElement>(null);
+  const packetLossChartRef = useRef<HTMLCanvasElement>(null);
+
+  const pingChartInstanceRef = useRef<Chart<"bar"> | null>(null);
+  const jitterChartInstanceRef = useRef<Chart<"bar"> | null>(null);
+  const packetLossChartInstanceRef = useRef<Chart<"bar"> | null>(null);
+
+  const { ping, jitter, packetLoss } = useMetricsWebSocket();
 
   async function testUploadSpeedStreaming(wasm: {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -22,7 +59,7 @@ export default function Home() {
   }) {
     setLoading(true);
 
-    const fileSize = 1024 * 1024 * 30; // 30MB fil
+    const fileSize = 1024 * 1024 * 30;
     const testFile = new Blob(["a".repeat(fileSize)], {
       type: "application/octet-stream",
     });
@@ -34,7 +71,10 @@ export default function Home() {
 
       console.log(chunk);
 
-      await fetch("https://speedtest-server-production.up.railway.app/upload");
+      await fetch("https://speedtest-server-production.up.railway.app/upload", {
+        method: "POST",
+        body: chunk,
+      });
 
       const endTime = performance.now();
       const elapsed = Math.max(1, Math.round(endTime - startTime));
@@ -65,8 +105,10 @@ export default function Home() {
     setUploadSpeed(null);
     setDownloadSpeed(null);
 
-    await testDownloadSpeedStreaming(wasm);
-    await testUploadSpeedStreaming(wasm);
+    await Promise.all([
+      testDownloadSpeedStreaming(wasm),
+      testUploadSpeedStreaming(wasm),
+    ]);
   }
 
   useEffect(() => {
@@ -205,6 +247,98 @@ export default function Home() {
     downloadChartInstanceRef.current.update("none");
   }
 
+  useEffect(() => {
+    const createChart = (
+      ref: React.RefObject<HTMLCanvasElement>,
+      instanceRef: React.MutableRefObject<Chart<"bar"> | null>,
+      label: string,
+      color: string
+    ) => {
+      if (ref.current && !instanceRef.current) {
+        const data: ChartData<"bar"> = {
+          labels: [label],
+          datasets: [
+            {
+              label,
+              data: [0],
+              backgroundColor: [color],
+            },
+          ],
+        };
+
+        const options: ChartOptions<"bar"> = {
+          responsive: true,
+          indexAxis: "y",
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: label === "Packet Loss" ? 100 : undefined,
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true },
+          },
+        };
+
+        instanceRef.current = new Chart(ref.current, {
+          type: "bar",
+          data,
+          options,
+        });
+      }
+    };
+
+    createChart(
+      pingChartRef as RefObject<HTMLCanvasElement>,
+      pingChartInstanceRef,
+      "Ping",
+      "#FF6384"
+    );
+    createChart(
+      jitterChartRef as RefObject<HTMLCanvasElement>,
+      jitterChartInstanceRef,
+      "Jitter",
+      "#FFCE56"
+    );
+    createChart(
+      packetLossChartRef as RefObject<HTMLCanvasElement>,
+      packetLossChartInstanceRef,
+      "Packet Loss",
+      "#4BC0C0"
+    );
+
+    return () => {
+      pingChartInstanceRef.current?.destroy();
+      jitterChartInstanceRef.current?.destroy();
+      packetLossChartInstanceRef.current?.destroy();
+      pingChartInstanceRef.current = null;
+      jitterChartInstanceRef.current = null;
+      packetLossChartInstanceRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pingChartInstanceRef.current && ping !== null) {
+      pingChartInstanceRef.current.data.datasets[0].data = [ping];
+      pingChartInstanceRef.current.update("none");
+    }
+  }, [ping]);
+
+  useEffect(() => {
+    if (jitterChartInstanceRef.current && jitter !== null) {
+      jitterChartInstanceRef.current.data.datasets[0].data = [jitter];
+      jitterChartInstanceRef.current.update("none");
+    }
+  }, [jitter]);
+
+  useEffect(() => {
+    if (packetLossChartInstanceRef.current && packetLoss !== null) {
+      packetLossChartInstanceRef.current.data.datasets[0].data = [packetLoss];
+      packetLossChartInstanceRef.current.update("none");
+    }
+  }, [packetLoss]);
+
   return (
     <>
       <button onClick={runTest} disabled={loading}>
@@ -219,6 +353,18 @@ export default function Home() {
           uploadSpeed={uploadSpeed}
           uploadChartRef={uploadChartRef}
         />
+        <div></div>
+        <div className={styles.metrics}>
+          <div>
+            <canvas ref={pingChartRef} width={200} height={60} />
+          </div>
+          <div>
+            <canvas ref={jitterChartRef} width={200} height={60} />
+          </div>
+          <div>
+            <canvas ref={packetLossChartRef} width={200} height={60} />
+          </div>
+        </div>
       </div>
     </>
   );
