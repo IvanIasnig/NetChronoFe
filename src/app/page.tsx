@@ -51,49 +51,91 @@ export default function Home() {
 
   const { ping, jitter, packetLoss } = useMetricsWebSocket();
 
-  async function testUploadSpeedStreaming(wasm: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    calculate_speed: Function;
-  }) {
+  function calculateSpeed(bytesUploaded: number, elapsedMs: number): number {
+    if (elapsedMs === 0) return 0;
+
+    const bitsUploaded = bytesUploaded * 8;
+    const seconds = elapsedMs / 1000;
+
+    const speedBps = bitsUploaded / seconds;
+    const speedMbps = speedBps / 1_000_000;
+
+    return speedMbps;
+  }
+
+  async function testUploadSpeedStreaming() {
     setLoading(true);
 
     const fileSize = 1024 * 1024 * 30;
     const testFile = new Blob(["a".repeat(fileSize)], {
       type: "application/octet-stream",
     });
-    const chunkSize = 64 * 1024;
-    let offset = 0;
 
-    const sendChunk = async (chunk: Blob): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
       const startTime = performance.now();
 
-      console.log(chunk);
+      let lastLoaded = 0;
+      let lastTime = performance.now();
 
-      await fetch("https://speedtest-server-production.up.railway.app/upload", {
-        method: "POST",
-        body: chunk,
-      });
+      let speedSum = 0;
+      let speedCount = 0;
 
-      const endTime = performance.now();
-      const elapsed = Math.max(1, Math.round(endTime - startTime));
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const currentLoaded = event.loaded;
+          const currentTime = performance.now();
 
-      const chunkSpeed = wasm.calculate_speed(
-        BigInt(chunk.size),
-        BigInt(elapsed)
+          const elapsed = currentTime - startTime;
+          const progressRatio = currentLoaded / fileSize;
+
+          // Ignora i primi 200ms e l'ultimo 10% dell'upload
+          // fatto per evitare lo spike iniziale e il down finale
+          if (elapsed < 200 || progressRatio > 0.9) {
+            lastLoaded = currentLoaded;
+            lastTime = currentTime;
+            return;
+          }
+
+          const deltaBytes = currentLoaded - lastLoaded;
+          const deltaTime = currentTime - lastTime;
+
+          if (deltaTime > 0) {
+            const speed = calculateSpeed(deltaBytes, deltaTime); // Mbps
+            speedSum += speed;
+            speedCount++;
+
+            const averageSpeed = speedSum / speedCount;
+
+            setUploadSpeed(averageSpeed);
+            updateChart(averageSpeed);
+          }
+
+          lastLoaded = currentLoaded;
+          lastTime = currentTime;
+        }
+      };
+
+      xhr.onload = () => {
+        setLoading(false);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        setLoading(false);
+        reject(new Error("Network error during upload"));
+      };
+
+      xhr.open(
+        "POST",
+        "https://speedtest-server-production.up.railway.app/upload"
       );
-
-      setUploadSpeed(chunkSpeed);
-      updateChart(chunkSpeed);
-    };
-
-    while (offset < fileSize) {
-      const chunk = testFile.slice(offset, offset + chunkSize);
-      await sendChunk(chunk);
-      offset += chunkSize;
-    }
-
-    setLoading(false);
-    setLoading(false);
+      xhr.send(testFile);
+    });
   }
 
   async function runTest() {
@@ -103,10 +145,8 @@ export default function Home() {
     setUploadSpeed(null);
     setDownloadSpeed(null);
 
-    await Promise.all([
-      testDownloadSpeedStreaming(wasm),
-      testUploadSpeedStreaming(wasm),
-    ]);
+    await testDownloadSpeedStreaming(wasm);
+    await testUploadSpeedStreaming();
   }
 
   useEffect(() => {
