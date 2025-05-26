@@ -1,49 +1,52 @@
 "use client";
-import { loginWithEmail } from "@/lib/auth";
-import { useState } from "react";
+
+import { useLoginForm } from "@/hooks/useLoginInForm";
+import styles from "./LoginForm.module.scss";
 
 export function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
-
-    const { error } = await loginWithEmail(email, password);
-
-    if (error) {
-      setErrorMsg(error);
-    } else {
-      alert("Login effettuato!");
-    }
-
-    setLoading(false);
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    errorMsg,
+    loading,
+    handleLogin,
+  } = useLoginForm();
 
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={loading}>
+    <form onSubmit={handleLogin} className={styles.form}>
+      <h2 className={styles.form__title}>Accedi al tuo account</h2>
+
+      <div className={styles["form__input-group"]}>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="Inserisci la tua email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className={styles["form__input-group"]}>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Inserisci la tua password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      {errorMsg && <p className={styles.form__error}>{errorMsg}</p>}
+
+      <button type="submit" disabled={loading} className={styles.form__button}>
         {loading ? "Caricamento..." : "Login"}
       </button>
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
     </form>
   );
 }
