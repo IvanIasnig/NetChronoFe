@@ -1,18 +1,20 @@
+@import "@/styles/colors.module.scss";
+
 .auth {
   display: flex;
   align-items: center;
   justify-content: center;
   max-height: 100vh;
   padding: 2rem;
-  background-color: #f9fafb;
 
   &__box {
-    background-color: #fff;
+    background-color: $color-black-secondary;
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     width: 100%;
     max-width: 400px;
+    border: 1px solid $border-primary;
   }
 
   &__toggle {
@@ -25,19 +27,40 @@
     flex: 1;
     padding: 0.75rem;
     border: none;
-    border-bottom: 2px solid transparent;
     background: none;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
+    position: relative;
+    color: $text-secondary;
+    transition: color 0.3s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background-color: $button-primary;
+      transform: translateX(-50%) scaleX(0);
+      transform-origin: center;
+      transition: transform 0.3s ease;
+    }
 
     &:hover {
-      color: #2563eb;
+      color: $button-primary;
+    }
+
+    &:hover::after {
+      transform: translateX(-50%) scaleX(1);
     }
 
     &--active {
-      border-bottom: 2px solid #2563eb;
-      color: #2563eb;
+      color: $button-primary;
+
+      &::after {
+        transform: translateX(-50%) scaleX(1);
+      }
     }
   }
 

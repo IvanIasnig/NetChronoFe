@@ -1,3 +1,4 @@
+@import "@/styles/colors.module.scss";
 *,
 *::before,
 *::after {
@@ -10,8 +11,8 @@ html,
 body {
   margin: 0;
   font-family: var(--font-geist-sans), sans-serif;
-  background-color: #f9f9f9;
-  color: #222;
+  background-color: $color-black;
+  color: $text-primary;
 }
 
 a {

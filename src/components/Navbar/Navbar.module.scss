@@ -1,18 +1,20 @@
+@import "@/styles/colors.module.scss";
+
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 10;
+  border-bottom: 1px solid $border-primary;
 
   &__logo {
     a {
       font-size: 1.5rem;
       font-weight: bold;
-      color: #2563eb;
+      color: white;
       text-decoration: none;
     }
   }
@@ -27,23 +29,43 @@
       left: 0;
       right: 0;
       flex-direction: column;
-      background-color: white;
+      background-color: $color-black;
       padding: 1rem 2rem;
       display: none;
     }
 
     &--open {
       display: flex !important;
+      border-bottom: 1px solid $border-primary;
     }
   }
 
   &__link {
+    position: relative;
     text-decoration: none;
-    color: #333;
+    color: $text-nocolor;
     transition: color 0.3s ease;
+    width: fit-content;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -4px;
+      transform: translateX(-50%) scaleX(0);
+      transform-origin: center;
+      width: 100%;
+      height: 2px;
+      background-color: $button-primary;
+      transition: transform 0.3s ease;
+    }
 
     &:hover {
-      color: #2563eb;
+      color: $text-primary;
+
+      &::after {
+        transform: translateX(-50%) scaleX(1);
+      }
     }
   }
 
@@ -52,6 +74,7 @@
     background: none;
     border: none;
     cursor: pointer;
+    color: $button-primary;
 
     @media (max-width: 768px) {
       display: block;

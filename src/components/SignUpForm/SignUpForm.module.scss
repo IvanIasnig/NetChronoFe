@@ -1,60 +1,81 @@
-.signup {
+@import "@/styles/colors.module.scss";
+
+.form {
   max-width: 400px;
-  margin: 2rem auto;
-  padding: 1rem;
+  margin: 5rem auto;
+  padding: 2rem;
+  background-color: $color-black-secondary;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-  &__title {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-  }
-
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  &__label {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 
   &__input {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-
-    &:focus {
-      border-color: #2563eb;
-      outline: none;
-    }
+    background-color: #f9fcd3;
   }
 
-  &__button {
-    padding: 0.75rem;
-    background-color: #2563eb;
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  &__title {
+    text-align: center;
+    color: $text-primary;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+  &__input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 500;
+      color: $text-primary;
+    }
+
+    input {
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+
+      &:focus {
+        border-color: $button-primary;
+        outline: none;
+      }
     }
   }
 
   &__error {
-    color: red;
-    margin-top: 1rem;
+    color: $error;
+    font-size: 0.9rem;
     text-align: center;
+  }
+
+  &__button {
+    padding: 0.75rem 1rem;
+    background-color: $button-primary;
+    color: $button-text;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: $button-hover;
+    }
+
+    &:disabled {
+      background-color: $button-hover;
+      cursor: not-allowed;
+    }
   }
 
   &__message {
     color: green;
-    margin-top: 1rem;
+    font-size: 0.9rem;
     text-align: center;
   }
 }

@@ -1,13 +1,10 @@
-$form-color: #f5f5f5;
-$primary: #2c3e50;
-$accent: #3498db;
-$error: #e74c3c;
+@import "@/styles/colors.module.scss";
 
 .form {
   max-width: 400px;
   margin: 5rem auto;
   padding: 2rem;
-  background-color: $form-color;
+  background-color: $color-black-secondary;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -15,9 +12,13 @@ $error: #e74c3c;
   flex-direction: column;
   gap: 1.5rem;
 
+  &__input {
+    background-color: #f9fcd3;
+  }
+
   &__title {
     text-align: center;
-    color: $primary;
+    color: $text-primary;
     font-size: 1.8rem;
     font-weight: 600;
   }
@@ -29,7 +30,7 @@ $error: #e74c3c;
 
     label {
       font-weight: 500;
-      color: $primary;
+      color: $text-primary;
     }
 
     input {
@@ -40,7 +41,7 @@ $error: #e74c3c;
       transition: border-color 0.2s ease;
 
       &:focus {
-        border-color: $accent;
+        border-color: $button-primary;
         outline: none;
       }
     }
@@ -54,8 +55,8 @@ $error: #e74c3c;
 
   &__button {
     padding: 0.75rem 1rem;
-    background-color: $accent;
-    color: white;
+    background-color: $button-primary;
+    color: $button-text;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
@@ -63,11 +64,11 @@ $error: #e74c3c;
     transition: background-color 0.2s ease;
 
     &:hover:not(:disabled) {
-      background-color: darken($accent, 8%);
+      background-color: $button-hover;
     }
 
     &:disabled {
-      background-color: lighten($accent, 20%);
+      background-color: $button-hover;
       cursor: not-allowed;
     }
   }

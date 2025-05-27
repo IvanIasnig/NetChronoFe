@@ -16,11 +16,10 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleLogin} className={styles.form}>
-      <h2 className={styles.form__title}>Accedi al tuo account</h2>
-
       <div className={styles["form__input-group"]}>
         <label htmlFor="email">Email</label>
         <input
+          className={styles.form__input}
           id="email"
           type="email"
           placeholder="Inserisci la tua email"
@@ -37,6 +36,7 @@ export function LoginForm() {
           type="password"
           placeholder="Inserisci la tua password"
           value={password}
+          className={styles.form__input}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
